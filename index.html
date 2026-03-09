@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Huella de Movilidad</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        
+        <header>
+            <h1 data-i18n="title">Huella de Movilidad</h1>
+            <div class="language-switch">
+                <button id="lang-es" class="active" onclick="setLanguage('es')">ES</button>
+                <button id="lang-cat" onclick="setLanguage('cat')">CAT</button>
+                <button id="lang-en" onclick="setLanguage('en')">EN</button>
+            </div>
+        </header>
+
+        <main>
+            <p data-i18n="description" class="subtitle">Calcula las emisiones de CO₂ de tu viaje al evento de hoy.</p>
+            
+            <div class="input-group">
+                <label for="distance" data-i18n="distanceLabel">Distancia recorrida (km):</label>
+                <input type="number" id="distance" placeholder="Ej. 5.5" min="0" step="0.1" required>
+            </div>
+
+            <div class="input-group">
+                <label for="mode" data-i18n="modeLabel">Medio de transporte:</label>
+                <select id="mode" required>
+                    <option value="" disabled selected data-i18n="selectMode">Selecciona una opción...</option>
+                    <option value="walking" data-i18n="modeWalking">🚶 A pie / Bicing / Patinete (0 g/km)</option>
+                    <option value="metro" data-i18n="modeMetro">🚇 Metro TMB (28 g/km)</option>
+                    <option value="tram" data-i18n="modeTram">🚈 Trambaix / Trambesòs (29 g/km)</option>
+                    <option value="train" data-i18n="modeTrain">🚆 Rodalies / FGC (35 g/km)</option>
+                    <option value="ev" data-i18n="modeEV">⚡ Coche Eléctrico (47 g/km)</option>
+                    <option value="bus" data-i18n="modeBus">🚌 Autobús TMB (79 g/km)</option>
+                    <option value="moto" data-i18n="modeMoto">🛵 Moto (114 g/km)</option>
+                    <option value="car" data-i18n="modeCar">🚗 Coche Combustión (170 g/km)</option>
+                </select>
+            </div>
+
+            <button id="calculate-btn" onclick="calculateFootprint()" data-i18n="calculateBtn">Calcular Huella</button>
+
+            <div id="result-card" class="result-hidden">
+                <h2 data-i18n="resultTitle">Tu impacto:</h2>
+                <div id="co2-result" class="highlight-number">0 kg CO₂</div>
+                <p id="context-text" data-i18n="resultContext" class="context-message"></p>
+            </div>
+        </main>
+        
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
