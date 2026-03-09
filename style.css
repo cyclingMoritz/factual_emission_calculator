@@ -156,3 +156,30 @@ input[type="number"]:focus, select:focus {
     from { opacity: 0; transform: translateY(-10px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+.partner-logos {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+    text-align: center;
+}
+
+.logo-row {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.footer-logo {
+    max-height: 40px; /* Keeps logos consistent and small */
+    width: auto;
+    filter: grayscale(20%); /* Optional: makes it look more subtle */
+    opacity: 0.8;
+}
+
+.footer-logo:hover {
+    filter: grayscale(0%);
+    opacity: 1;
+}
