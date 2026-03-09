@@ -21,6 +21,12 @@ This project (HTML, CSS, and JavaScript logic) was generated using Google's Gemi
 * **Multilingual:** Instantly switches between Spanish (ES), Catalan (CAT), and English (EN).
 * **Mobile-First Design:** Optimized with large, tap-friendly elements for mobile phone users.
 
+## ⚙️ How to Update the Data 
+To add a new transport mode or update the emissions math:
+1. Open the `modes.csv` file in Excel or any text editor.
+2. Edit existing rows or add a new one using the exact semicolon-separated format: `id;co2;icon;es;cat;en`
+3. Save the file. The web app will automatically build the new dropdown menu, apply the translations, and update the math calculations the next time it is loaded!
+
 ## 🚀 How to Try It
 
 [Link to Live App](https://cyclingmoritz.github.io/factual_emission_calculator/)
