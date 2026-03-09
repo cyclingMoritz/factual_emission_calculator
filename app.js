@@ -1,27 +1,10 @@
-// =====================================================================
-// ⚙️ ZONA DE CONFIGURACIÓN (Para revisión de supervisores)
-// =====================================================================
-// Estos son los factores de emisión en gramos de CO2 por kilómetro (g/km).
-// Si se obtienen datos locales más exactos para Barcelona, solo hay que 
-// cambiar los números aquí. El resto de la app se actualizará sola.
+// --- VARIABLES GLOBALES ---
+let currentLang = 'es'; 
+let lastCalculatedKg = null; 
+let transportModes = []; // Aquí se guardarán los datos del CSV
 
-const EMISSION_FACTORS = {
-    "walking": 0,    // A pie, Bicing, Patinete
-    "metro": 28,     // Metro TMB
-    "tram": 29,      // Trambaix / Trambesòs
-    "train": 35,     // Rodalies / FGC
-    "ev": 47,        // Coche Eléctrico
-    "bus": 79,       // Autobús TMB
-    "moto": 114,     // Moto
-    "car": 170       // Coche Combustión (1 pasajero)
-};
-
-// =====================================================================
-// 🛑 FIN DE LA ZONA DE CONFIGURACIÓN (No modificar a partir de aquí)
-// =====================================================================
-
-
-// --- DICCIONARIO DE IDIOMAS (Español / Catalán / Inglés) ---
+// --- DICCIONARIO DE IDIOMAS (Solo para la interfaz estática) ---
+// Nota: Los nombres de los transportes ahora viven en el archivo modes.csv
 const translations = {
     es: {
         title: "Huella de Movilidad",
@@ -29,14 +12,6 @@ const translations = {
         distanceLabel: "Distancia recorrida (km):",
         modeLabel: "Medio de transporte:",
         selectMode: "Selecciona una opción...",
-        modeWalking: "🚶 A pie / Bicing / Patinete (0 g/km)",
-        modeMetro: "🚇 Metro TMB (28 g/km)",
-        modeTram: "🚈 Trambaix / Trambesòs (29 g/km)",
-        modeTrain: "🚆 Rodalies / FGC (35 g/km)",
-        modeEV: "⚡ Coche Eléctrico (47 g/km)",
-        modeBus: "🚌 Autobús TMB (79 g/km)",
-        modeMoto: "🛵 Moto (114 g/km)",
-        modeCar: "🚗 Coche Combustión (170 g/km)",
         calculateBtn: "Calcular Huella",
         resultTitle: "Tu impacto:",
         contextEco: "¡Genial! Tu medio de transporte es de muy bajo impacto. ¡Gracias por cuidar el aire de Barcelona!",
@@ -49,14 +24,6 @@ const translations = {
         distanceLabel: "Distància recorreguda (km):",
         modeLabel: "Mitjà de transport:",
         selectMode: "Selecciona una opció...",
-        modeWalking: "🚶 A peu / Bicing / Patinet (0 g/km)",
-        modeMetro: "🚇 Metro TMB (28 g/km)",
-        modeTram: "🚈 Trambaix / Trambesòs (29 g/km)",
-        modeTrain: "🚆 Rodalies / FGC (35 g/km)",
-        modeEV: "⚡ Cotxe Elèctric (47 g/km)",
-        modeBus: "🚌 Autobús TMB (79 g/km)",
-        modeMoto: "🛵 Moto (114 g/km)",
-        modeCar: "🚗 Cotxe Combustió (170 g/km)",
         calculateBtn: "Calcular Petjada",
         resultTitle: "El teu impacte:",
         contextEco: "Genial! El teu mitjà de transport és de molt baix impacte. Gràcies per cuidar l'aire de Barcelona!",
@@ -69,14 +36,6 @@ const translations = {
         distanceLabel: "Distance traveled (km):",
         modeLabel: "Transport mode:",
         selectMode: "Select an option...",
-        modeWalking: "🚶 Walking / Bicing / E-scooter (0 g/km)",
-        modeMetro: "🚇 TMB Metro (28 g/km)",
-        modeTram: "🚈 Trambaix / Trambesòs (29 g/km)",
-        modeTrain: "🚆 Rodalies / FGC Train (35 g/km)",
-        modeEV: "⚡ Electric Car (47 g/km)",
-        modeBus: "🚌 TMB Bus (79 g/km)",
-        modeMoto: "🛵 Motorcycle (114 g/km)",
-        modeCar: "🚗 Combustion Car (170 g/km)",
         calculateBtn: "Calculate Footprint",
         resultTitle: "Your impact:",
         contextEco: "Great! Your transport mode has a very low impact. Thank you for keeping Barcelona's air clean!",
@@ -85,22 +44,80 @@ const translations = {
     }
 };
 
-let currentLang = 'es'; // Idioma por defecto
-let lastCalculatedKg = null; // Para recordar el cálculo si cambian de idioma
+// --- 1. CARGAR DATOS DESDE EL CSV ---
+async function loadEmissionData() {
+    try {
+        const response = await fetch('modes.csv');
+        const data = await response.text();
+        
+        const lines = data.trim().split('\n');
+        
+        // Leer a partir de la línea 1 (saltando los encabezados)
+        for(let i = 1; i < lines.length; i++) {
+            // Usamos punto y coma (;) para separar
+            const [id, co2, icon, es, cat, en] = lines[i].split(';');
+            
+            if(id && co2) {
+                transportModes.push({
+                    id: id.trim(),
+                    co2: parseFloat(co2.trim()),
+                    icon: icon.trim(),
+                    translations: {
+                        es: es.trim(),
+                        cat: cat.trim(),
+                        en: en.trim()
+                    }
+                });
+            }
+        }
+        
+        console.log("Modos de transporte cargados:", transportModes);
+        
+        // Inicializar la página en español una vez cargados los datos
+        setLanguage('es');
 
-// --- FUNCIÓN PARA CAMBIAR EL IDIOMA ---
+    } catch (error) {
+        console.error("Error al cargar modes.csv:", error);
+        alert("Hubo un problema cargando los modos de transporte. Verifica que el archivo modes.csv exista.");
+    }
+}
+
+// --- 2. CONSTRUIR EL MENÚ DESPLEGABLE DINÁMICAMENTE ---
+function buildDropdown(lang) {
+    const selectElement = document.getElementById('mode');
+    
+    // Guardar la opción actual seleccionada (si la hay)
+    const currentSelection = selectElement.value;
+    
+    // Limpiar el menú (dejando solo la opción por defecto)
+    selectElement.innerHTML = `<option value="" disabled ${currentSelection === "" ? "selected" : ""} data-i18n="selectMode">${translations[lang].selectMode}</option>`;
+    
+    // Crear una opción nueva por cada línea del CSV
+    transportModes.forEach(mode => {
+        const option = document.createElement('option');
+        option.value = mode.id;
+        // Formato visual: 🚇 Metro TMB (28 g/km)
+        option.textContent = `${mode.icon} ${mode.translations[lang]} (${mode.co2} g/km)`;
+        
+        // Mantener seleccionado lo que el usuario ya había elegido al cambiar de idioma
+        if (mode.id === currentSelection) {
+            option.selected = true;
+        }
+        selectElement.appendChild(option);
+    });
+}
+
+// --- 3. CAMBIAR EL IDIOMA DE LA INTERFAZ ---
 function setLanguage(lang) {
     currentLang = lang;
     
-    // Cambiar estilos de los botones de idioma (La versión mejorada)
-    // 1. Quitamos la clase 'active' de TODOS los botones
+    // Cambiar estilos de los botones de idioma
     document.querySelectorAll('.language-switch button').forEach(btn => {
         btn.classList.remove('active');
     });
-    // 2. Se la ponemos solo al botón que acabas de hacer clic
     document.getElementById(`lang-${lang}`).classList.add('active');
 
-    // Traducir todos los elementos con la etiqueta data-i18n
+    // Traducir los textos estáticos de la interfaz (título, botón, etc.)
     const elements = document.querySelectorAll('[data-i18n]');
     elements.forEach(el => {
         const key = el.getAttribute('data-i18n');
@@ -109,17 +126,21 @@ function setLanguage(lang) {
         }
     });
 
+    // Actualizar el menú desplegable con el nuevo idioma
+    buildDropdown(lang);
+
     // Si ya hay un resultado en pantalla, actualizar el texto de contexto
     if (lastCalculatedKg !== null) {
         updateContextMessage(lastCalculatedKg);
     }
 }
-// --- FUNCIÓN PRINCIPAL DE CÁLCULO ---
+
+// --- 4. CALCULAR LA HUELLA ---
 function calculateFootprint() {
     const distanceInput = document.getElementById('distance').value;
     const modeSelect = document.getElementById('mode').value;
 
-    // Validación básica
+    // Validación
     if (!distanceInput || distanceInput <= 0 || !modeSelect) {
         let alertMsg = "Por favor, introduce una distancia válida y selecciona un transporte.";
         if (currentLang === 'cat') alertMsg = "Si us plau, introdueix una distància vàlida i selecciona un transport.";
@@ -128,40 +149,40 @@ function calculateFootprint() {
         return;
     }
 
-    // El cálculo: (Distancia * Factor de Emisión) / 1000 = kg de CO2
+    // Encontrar el modo de transporte seleccionado en nuestra base de datos dinámica
+    const selectedModeData = transportModes.find(m => m.id === modeSelect);
+    const emissionFactor = selectedModeData.co2;
+    
+    // Cálculo final
     const distance = parseFloat(distanceInput);
-    const emissionFactor = EMISSION_FACTORS[modeSelect];
     const totalKgCO2 = (distance * emissionFactor) / 1000;
     
-    // Guardamos el resultado por si cambian de idioma
     lastCalculatedKg = totalKgCO2;
 
-    // Mostrar el resultado en pantalla (redondeado a 2 decimales)
+    // Mostrar resultado
     document.getElementById('co2-result').textContent = `${totalKgCO2.toFixed(2)} kg CO₂`;
     updateContextMessage(totalKgCO2);
 
-    // Hacer visible la tarjeta de resultados con la animación
     const resultCard = document.getElementById('result-card');
     resultCard.classList.remove('result-hidden');
     resultCard.classList.add('result-visible');
 }
 
-// --- FUNCIÓN PARA EL MENSAJE DE CONTEXTO ---
+// --- 5. ACTUALIZAR MENSAJE DE CONTEXTO ---
 function updateContextMessage(kgCO2) {
     const contextElement = document.getElementById('context-text');
     
-    // Asignar un mensaje dependiendo del impacto (los umbrales son de ejemplo)
     if (kgCO2 === 0 || kgCO2 < 0.5) {
         contextElement.textContent = translations[currentLang].contextEco;
-        contextElement.style.color = "#166534"; // Verde oscuro
+        contextElement.style.color = "#166534"; 
     } else if (kgCO2 < 2.0) {
         contextElement.textContent = translations[currentLang].contextMid;
-        contextElement.style.color = "#854d0e"; // Naranja/Marrón para avisar
+        contextElement.style.color = "#854d0e"; 
     } else {
         contextElement.textContent = translations[currentLang].contextHigh;
-        contextElement.style.color = "#991b1b"; // Rojo suave para impacto alto
+        contextElement.style.color = "#991b1b"; 
     }
 }
 
-// Inicializar la página en español al cargar
-window.onload = () => setLanguage('es');
+// Inicializar la app cargando los datos del CSV al abrir la página
+window.onload = loadEmissionData;

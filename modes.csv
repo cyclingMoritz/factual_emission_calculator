@@ -1,0 +1,9 @@
+id;co2;icon;es;cat;en
+walking;0;🚶;A pie / Bicicleta / Patinete;A peu / Bicicleta / Patinet;Walking / Bicycle / Scooter
+metro;28;🚇;Metro TMB;Metro TMB;TMB Metro
+tram;29;🚈;Trambaix / Trambesòs;Trambaix / Trambesòs;Trambaix / Trambesòs
+train;35;🚆;Rodalies / FGC;Rodalies / FGC;Rodalies / FGC Train
+ev;47;⚡;Coche Eléctrico;Cotxe Elèctric;Electric Car
+bus;79;🚌;Autobús TMB;Autobús TMB;TMB Bus
+moto;114;🛵;Moto;Moto;Motorcycle
+car;170;🚗;Coche Combustión;Cotxe Combustió;Combustion Car
