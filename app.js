@@ -18,6 +18,7 @@ const translations = {
         annualTitle: "Rutina Anual",
         annualDesc: "Calcula tu impacto anual (ida y vuelta, 45 semanas al año).",
         daysLabel: "Días en la oficina por semana:",
+        weeksLabel: "Semanas laborables al año:",
         btnAddLeg: "+ Añadir otro tramo",
         distanceLabel: "Distancia (km):",
         modeLabel: "Transporte:",
@@ -44,6 +45,7 @@ const translations = {
         annualTitle: "Rutina Anual",
         annualDesc: "Calcula el teu impacte anual (anada i tornada, 45 setmanes a l'any).",
         daysLabel: "Dies a l'oficina per setmana:",
+        weeksLabel: "Setmanes laborables a l'any:",
         btnAddLeg: "+ Afegir un altre tram",
         distanceLabel: "Distància (km):",
         modeLabel: "Transport:",
@@ -70,6 +72,7 @@ const translations = {
         annualTitle: "Annual Routine",
         annualDesc: "Calculate your annual impact (round trip, 45 weeks a year).",
         daysLabel: "Days at the office per week:",
+        weeksLabel: "Work weeks per year:",
         btnAddLeg: "+ Add another leg",
         distanceLabel: "Distance (km):",
         modeLabel: "Transport:",
@@ -173,6 +176,7 @@ async function loadEmissionData() {
         
         // Inicializar idioma y vista
         setLanguage('es');
+        setupSliders();
         handleUrlHash();
 
     } catch (error) {
@@ -251,7 +255,8 @@ function calculateFootprint(type) {
     // Si es anual, multiplicar por días, ida/vuelta (2) y 45 semanas
     if (type === 'annual') {
         const days = document.getElementById('days-per-week').value || 5;
-        totalKgCO2 = totalKgCO2 * 2 * days * 45;
+        const weeks = document.getElementById('weeks-per-year').value || 45;
+        totalKgCO2 = totalKgCO2 * 2 * days * weeks;
     }
     
     lastCalculatedKg = totalKgCO2;
@@ -291,5 +296,35 @@ function updateContextMessage(kgCO2) {
     }
 }
 
+// --- 6. SINCRONIZAR SLIDERS Y NÚMEROS ---
+function setupSliders() {
+    const syncPairs = [
+        { slider: 'days-slider', number: 'days-per-week' },
+        { slider: 'weeks-slider', number: 'weeks-per-year' }
+    ];
+
+    syncPairs.forEach(pair => {
+        const slider = document.getElementById(pair.slider);
+        const num = document.getElementById(pair.number);
+
+        if (slider && num) {
+            // Si mueven el slider, se actualiza el número
+            slider.addEventListener('input', (e) => num.value = e.target.value);
+            
+            // Si escriben el número manualmente, se mueve el slider
+            num.addEventListener('input', (e) => {
+                let val = parseInt(e.target.value);
+                const min = parseInt(num.min);
+                const max = parseInt(num.max);
+                
+                // Evitamos que metan valores locos (como 900 días por semana)
+                if (val < min) val = min;
+                if (val > max) val = max;
+                
+                slider.value = val || min; 
+            });
+        }
+    });
+}
 // --- ARRANQUE ---
 window.onload = loadEmissionData;

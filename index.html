@@ -52,10 +52,21 @@
                 <h2 data-i18n="annualTitle" class="view-title">Rutina Anual</h2>
                 <p data-i18n="annualDesc" class="subtitle">Calcula tu impacto anual (ida y vuelta, 45 semanas al año).</p>
                 
-                <div class="input-group">
-                    <label for="days-per-week" data-i18n="daysLabel">Días en la oficina por semana:</label>
+            <div class="input-group sync-group">
+                <label for="days-per-week" data-i18n="daysLabel">Días en la oficina por semana:</label>
+                <div class="slider-container">
+                    <input type="range" id="days-slider" min="1" max="7" value="5" step="1">
                     <input type="number" id="days-per-week" value="5" min="1" max="7" step="1">
                 </div>
+            </div>
+
+            <div class="input-group sync-group">
+                <label for="weeks-per-year" data-i18n="weeksLabel">Semanas al año:</label>
+                <div class="slider-container">
+                    <input type="range" id="weeks-slider" min="1" max="52" value="45" step="1">
+                    <input type="number" id="weeks-per-year" value="45" min="1" max="52" step="1">
+                </div>
+            </div>
 
                 <div id="annual-legs-container" class="legs-container">
                     </div>
