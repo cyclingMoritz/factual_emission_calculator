@@ -35,4 +35,9 @@ To add a new transport mode or update the emissions math:
 
 [Link to Live App](https://cyclingmoritz.github.io/factual_emission_calculator/)
 
+You can also scan the following QR code to access the app instantly:
+
+<img src="assets/qr-code.png" alt="PRO-MOUTE QR Code" width="250">
+
 Alternatively, you can run it locally by downloading this repository and opening the `index.html` file in any web browser.
+
