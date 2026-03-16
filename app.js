@@ -153,34 +153,47 @@ function removeLeg(legId) {
 
 // --- 3. CARGAR DATOS Y CREAR DESPLEGABLES ---
 async function loadEmissionData() {
+    // Usamos el enlace de exportación directa a CSV
+    const sheetUrl = 'https://docs.google.com/spreadsheets/d/1GoZvvJaK_v2fBLh4C8HzBHc-pRdg1IDyOFUUhxKFKCI/export?format=csv';
+
     try {
-        const response = await fetch('modes.csv');
+        const response = await fetch(sheetUrl);
+        
+        // Si el fetch falla (error de red o permisos)
+        if (!response.ok) throw new Error('No se pudo acceder a la hoja de cálculo');
+
         const data = await response.text();
         const lines = data.trim().split('\n');
         
+        transportModes = []; // Limpiamos para evitar duplicados
+
         for(let i = 1; i < lines.length; i++) {
-            const [id, co2, icon, es, cat, en] = lines[i].split(';');
+            // Google Sheets al exportar suele usar la coma (,) como separador
+            const [id, co2, icon, es, cat, en] = lines[i].split(',');
+            
             if(id && co2) {
                 transportModes.push({
                     id: id.trim(),
                     co2: parseFloat(co2.trim()),
                     icon: icon.trim(),
-                    translations: { es: es.trim(), cat: cat.trim(), en: en.trim() }
+                    translations: { 
+                        es: es.trim(), 
+                        cat: cat.trim(), 
+                        en: en.trim() 
+                    }
                 });
             }
         }
         
-        // Añadir el primer tramo por defecto a ambas calculadoras
-        addLeg('single');
-        addLeg('annual');
-        
-        // Inicializar idioma y vista
-        setLanguage('es');
-        setupSliders();
+        // Inicializar el resto de la app
+        setLanguage(currentLang);
         handleUrlHash();
+        setupSliders();
 
     } catch (error) {
-        console.error("Error al cargar modes.csv:", error);
+        console.error("Error cargando Google Sheets:", error);
+        // Opcional: Cargar un backup local si falla Google
+        // loadLocalBackup(); 
     }
 }
 
