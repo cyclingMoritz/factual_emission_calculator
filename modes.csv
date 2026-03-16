@@ -1,9 +1,20 @@
 id;co2;icon;es;cat;en
-walking;0;🚶;A pie / Bicicleta / Patinete;A peu / Bicicleta / Patinet;Walking / Bicycle / Scooter
-metro;28;🚇;Metro TMB;Metro TMB;TMB Metro
-tram;29;🚈;Trambaix / Trambesòs;Trambaix / Trambesòs;Trambaix / Trambesòs
-train;35;🚆;Rodalies / FGC;Rodalies / FGC;Rodalies / FGC Train
-ev;47;⚡;Coche Eléctrico;Cotxe Elèctric;Electric Car
-bus;79;🚌;Autobús TMB;Autobús TMB;TMB Bus
-moto;114;🛵;Moto;Moto;Motorcycle
-car;170;🚗;Coche Combustión;Cotxe Combustió;Combustion Car
+walk;0;🚶;A pie;A peu;Walking
+bicycle;0;🚲;Bicicleta (Mecánica);Bicicleta (Mecànica);Bicycle
+e-bike;5;⚡;Bicicleta Eléctrica;Bicicleta Elèctrica;E-bike
+scooter;15;🛴;Patinete Eléctrico;Patinet Elèctric;E-scooter
+subway;20;🚇;Metro;Metro;Subway / Metro
+tram;20;🚈;Tranvía;Tramvia;Tram
+light-rail;25;🚊;Tren Ligero (FGC);Tren Lleuger (FGC);Light Rail
+train;35;🚆;Tren (Rodalies);Tren (Rodalies);Train
+bus;68;🚌;Autobús;Autobús;Bus
+ferry;110;⛴️;Ferry / Barco;Ferry / Vaixell;Ferry
+motorbike;100;🛵;Moto;Moto;Motorbike
+car-electric;45;🔌;Coche (Eléctrico);Cotxe (Elèctric);Car (Electric)
+car-hybrid;90;🔋;Coche (Híbrido);Cotxe (Híbrid);Car (Hybrid)
+car-cng;110;🍃;Coche (Gas Natural/GNC);Cotxe (Gas Natural/GNC);Car (CNG)
+car-diesel;130;🛢️;Coche (Diésel);Cotxe (Dièsel);Car (Diesel)
+car;140;🚗;Coche (Gasolina);Cotxe (Benzina);Car (Petrol)
+rideshare;160;📱;VTC / Taxi (Solo);VTC / Taxi (Sol);Ride-share (solo)
+carpool-2-3;56;👥;Coche Compartido (2-3 pers.);Cotxe Compartit (2-3 pers.);Carpool (2-3 people)
+carpool-4plus;35;🚐;Coche Compartido (4+ pers.);Cotxe Compartit (4+ pers.);Carpool (4+ people)
