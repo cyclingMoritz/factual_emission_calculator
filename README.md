@@ -1,6 +1,6 @@
 # 🌍 PRO-MOUTE Mobility Footprint Calculator
 
-A lightweight, mobile-first web application designed for the **PRO-MOUTE** training course[cite: 12, 13]. This tool is used as an interactive workshop activity to help participants estimate the CO₂ emissions they generated commuting to the session.
+A lightweight, mobile-first web application designed for the **PRO-MOUTE** training course. This tool is used as an interactive workshop activity to help participants estimate the CO₂ emissions they generated commuting to the session, as well as calculate their annual commute footprint.
 
 ## 🎯 Context
 This calculator is part of an educational course aimed at professionals from public and private companies in Barcelona. The overarching goal of the course is to teach participants how to design and implement a "Pla de Desplaçaments d'Empresa (PDE)" and promote sustainable mobility within the workplace. 
@@ -17,9 +17,13 @@ The PRO-MOUTE edition is proudly organized and supported by:
 This project (HTML, CSS, and JavaScript logic) was generated using Google's Gemini 3.1 Pro AI as a fast, "no-code/low-code" solution to build a fully functional, multilingual tool for the workshop.
 
 ## ✨ Features
+* **Dual Calculators:** Seamlessly switch between a "Single Trip" calculator (for the event itself) and an "Annual Routine" calculator (for PDE planning).
+* **Multimodal Routing:** Users can add multiple transport "legs" to their journey (e.g., Bike + Train + Walk) for an accurate total calculation.
+* **Tangible Equivalencies:** Translates raw CO₂ kg into relatable metrics (trees needed for offset, equivalent kWh, and equivalent km driven in a combustion car).
+* **Direct QR Routing:** Supports URL hashes (`#evento`, `#anual`) allowing organizers to create QR codes that send participants directly to a specific calculator view.
+* **Dynamic Database:** Transport modes, icons, translations, and emission factors are pulled directly from a simple `.csv` spreadsheet, keeping code and data cleanly separated.
 * **Zero Friction:** No server, no database, and no app downloads required. It's a Single Page Application (SPA) that runs entirely in the browser.
 * **Multilingual:** Instantly switches between Spanish (ES), Catalan (CAT), and English (EN).
-* **Mobile-First Design:** Optimized with large, tap-friendly elements for mobile phone users.
 
 ## ⚙️ How to Update the Data 
 To add a new transport mode or update the emissions math:
