@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Huella de Movilidad</title>
+    <title>Calculadora de Huella de Movilidad | PRO-MOUTE</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -19,39 +19,87 @@
         </header>
 
         <main>
-            <p data-i18n="description" class="subtitle">Calcula las emisiones de CO₂ de tu viaje al evento de hoy.</p>
-            
-            <div class="input-group">
-                <label for="distance" data-i18n="distanceLabel">Distancia recorrida (km):</label>
-                <input type="number" id="distance" placeholder="Ej. 5.5" min="0" step="0.1" required>
+            <div id="view-landing" class="view-active">
+                <div class="landing-content">
+                    <h2 data-i18n="landingTitle">Bienvenido a PRO-MOUTE</h2>
+                    <p data-i18n="landingSubtitle" class="subtitle">¿Qué tipo de viaje deseas calcular hoy?</p>
+                    
+                    <button class="nav-btn primary-btn" onclick="goToView('single')">
+                        📅 <span data-i18n="btnSingle">Viaje de Hoy (Evento)</span>
+                    </button>
+                    
+                    <button class="nav-btn secondary-btn" onclick="goToView('annual')">
+                        🔁 <span data-i18n="btnAnnual">Rutina Anual (Commute)</span>
+                    </button>
+                </div>
             </div>
 
-            <div class="input-group">
-                <label for="mode" data-i18n="modeLabel">Medio de transporte:</label>
-                <select id="mode" required>
-                    <option value="" disabled selected data-i18n="selectMode">Selecciona una opción...</option>
-                </select>
+            <div id="view-single" class="view-hidden">
+                <button class="back-btn" onclick="goToView('landing')" data-i18n="btnBack">⬅ Volver</button>
+                <h2 data-i18n="singleTitle" class="view-title">Viaje al Evento</h2>
+                <p data-i18n="singleDesc" class="subtitle">Calcula las emisiones de CO₂ de tu viaje de hoy (solo ida).</p>
+                
+                <div id="single-legs-container" class="legs-container">
+                    </div>
+                
+                <button class="add-leg-btn" onclick="addLeg('single')" data-i18n="btnAddLeg">+ Añadir otro tramo</button>
+                
+                <button class="calculate-btn" onclick="calculateFootprint('single')" data-i18n="calculateBtn">Calcular Huella</button>
             </div>
 
-            <button id="calculate-btn" onclick="calculateFootprint()" data-i18n="calculateBtn">Calcular Huella</button>
+            <div id="view-annual" class="view-hidden">
+                <button class="back-btn" onclick="goToView('landing')" data-i18n="btnBack">⬅ Volver</button>
+                <h2 data-i18n="annualTitle" class="view-title">Rutina Anual</h2>
+                <p data-i18n="annualDesc" class="subtitle">Calcula tu impacto anual (ida y vuelta, 45 semanas al año).</p>
+                
+                <div class="input-group">
+                    <label for="days-per-week" data-i18n="daysLabel">Días en la oficina por semana:</label>
+                    <input type="number" id="days-per-week" value="5" min="1" max="7" step="1">
+                </div>
+
+                <div id="annual-legs-container" class="legs-container">
+                    </div>
+                
+                <button class="add-leg-btn" onclick="addLeg('annual')" data-i18n="btnAddLeg">+ Añadir otro tramo</button>
+                
+                <button class="calculate-btn" onclick="calculateFootprint('annual')" data-i18n="calculateAnnualBtn">Calcular Huella Anual</button>
+            </div>
 
             <div id="result-card" class="result-hidden">
                 <h2 data-i18n="resultTitle">Tu impacto:</h2>
                 <div id="co2-result" class="highlight-number">0 kg CO₂</div>
-                <p id="context-text" data-i18n="resultContext" class="context-message"></p>
+                <p id="context-text" class="context-message"></p>
+                
+                <div id="equivalencies" class="equivalencies-grid">
+                    <div class="equiv-card">
+                        <div class="equiv-icon">🌳</div>
+                        <div id="equiv-trees" class="equiv-val">0</div>
+                        <div class="equiv-label" data-i18n="equivTrees">Árboles / año</div>
+                    </div>
+                    <div class="equiv-card">
+                        <div class="equiv-icon">⚡</div>
+                        <div id="equiv-kwh" class="equiv-val">0</div>
+                        <div class="equiv-label">kWh</div>
+                    </div>
+                    <div class="equiv-card">
+                        <div class="equiv-icon">🚗</div>
+                        <div id="equiv-km" class="equiv-val">0</div>
+                        <div class="equiv-label" data-i18n="equivKm">km en coche</div>
+                    </div>
+                </div>
             </div>
         </main>
-      <footer class="partner-logos">
-        <div class="logo-row">
-            <img src="assets/logo-promoute.png" alt="PRO-MOUTE" class="footer-logo">
-            <img src="assets/logo-factual.png" alt="FACTUAL" class="footer-logo">
-            <img src="assets/logo-cambra.png" alt="Cambra de Comerç" class="footer-logo">
-            <img src="assets/logo-eit.png" alt="EIT Urban Mobility" class="footer-logo">
-        </div>
-    </footer>      
+
+        <footer class="partner-logos">
+            <div class="logo-row">
+                <img src="assets/logo-promoute.png" alt="PRO-MOUTE" class="footer-logo">
+                <img src="assets/logo-factual.png" alt="FACTUAL" class="footer-logo">
+                <img src="assets/logo-cambra.png" alt="Cambra de Comerç" class="footer-logo">
+                <img src="assets/logo-eit.png" alt="EIT Urban Mobility" class="footer-logo">
+            </div>
+        </footer>       
     </div>
 
     <script src="app.js"></script>
-
 </body>
 </html>

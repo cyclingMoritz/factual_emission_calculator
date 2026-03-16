@@ -1,181 +1,288 @@
 // --- VARIABLES GLOBALES ---
 let currentLang = 'es'; 
 let lastCalculatedKg = null; 
-let transportModes = []; // Aquí se guardarán los datos del CSV
+let transportModes = []; 
+let legCounter = 0; // Para dar un ID único a cada tramo que añadamos
 
-// --- DICCIONARIO DE IDIOMAS (Solo para la interfaz estática) ---
-// Nota: Los nombres de los transportes ahora viven en el archivo modes.csv
+// --- DICCIONARIO DE IDIOMAS ---
 const translations = {
     es: {
         title: "Huella de Movilidad",
-        description: "Calcula las emisiones de CO₂ de tu viaje al evento de hoy.",
-        distanceLabel: "Distancia recorrida (km):",
-        modeLabel: "Medio de transporte:",
+        landingTitle: "Bienvenido a PRO-MOUTE",
+        landingSubtitle: "¿Qué tipo de viaje deseas calcular hoy?",
+        btnSingle: "Viaje de Hoy (Evento)",
+        btnAnnual: "Rutina Anual (Commute)",
+        btnBack: "⬅ Volver",
+        singleTitle: "Viaje al Evento",
+        singleDesc: "Calcula las emisiones de CO₂ de tu viaje de hoy (solo ida).",
+        annualTitle: "Rutina Anual",
+        annualDesc: "Calcula tu impacto anual (ida y vuelta, 45 semanas al año).",
+        daysLabel: "Días en la oficina por semana:",
+        btnAddLeg: "+ Añadir otro tramo",
+        distanceLabel: "Distancia (km):",
+        modeLabel: "Transporte:",
         selectMode: "Selecciona una opción...",
+        legDelete: "X Eliminar",
         calculateBtn: "Calcular Huella",
+        calculateAnnualBtn: "Calcular Huella Anual",
         resultTitle: "Tu impacto:",
-        contextEco: "¡Genial! Tu medio de transporte es de muy bajo impacto. ¡Gracias por cuidar el aire de Barcelona!",
-        contextMid: "Buena elección. El transporte público ayuda a reducir el tráfico y la contaminación en la ciudad.",
-        contextHigh: "Si es posible, considera opciones como el Metro, Rodalies o compartir coche para futuros trayectos."
+        equivTrees: "Árboles / año",
+        equivKm: "km en coche",
+        contextEco: "¡Genial! Tu huella es muy baja. ¡Gracias por cuidar el aire!",
+        contextMid: "Buena elección. El transporte público reduce la contaminación.",
+        contextHigh: "Considera opciones como el transporte público para reducir este impacto."
     },
     cat: {
         title: "Petjada de Mobilitat",
-        description: "Calcula les emissions de CO₂ del teu viatge a l'esdeveniment d'avui.",
-        distanceLabel: "Distància recorreguda (km):",
-        modeLabel: "Mitjà de transport:",
+        landingTitle: "Benvingut a PRO-MOUTE",
+        landingSubtitle: "Quin tipus de viatge vols calcular avui?",
+        btnSingle: "Viatge d'Avui (Esdeveniment)",
+        btnAnnual: "Rutina Anual (Commute)",
+        btnBack: "⬅ Tornar",
+        singleTitle: "Viatge a l'Esdeveniment",
+        singleDesc: "Calcula les emissions de CO₂ del teu viatge d'avui (només anada).",
+        annualTitle: "Rutina Anual",
+        annualDesc: "Calcula el teu impacte anual (anada i tornada, 45 setmanes a l'any).",
+        daysLabel: "Dies a l'oficina per setmana:",
+        btnAddLeg: "+ Afegir un altre tram",
+        distanceLabel: "Distància (km):",
+        modeLabel: "Transport:",
         selectMode: "Selecciona una opció...",
+        legDelete: "X Eliminar",
         calculateBtn: "Calcular Petjada",
+        calculateAnnualBtn: "Calcular Petjada Anual",
         resultTitle: "El teu impacte:",
-        contextEco: "Genial! El teu mitjà de transport és de molt baix impacte. Gràcies per cuidar l'aire de Barcelona!",
-        contextMid: "Bona elecció. El transport públic ajuda a reduir el trànsit i la contaminació a la ciutat.",
-        contextHigh: "Si és possible, considera opcions com el Metro, Rodalies o compartir cotxe per a futurs trajectes."
+        equivTrees: "Arbres / any",
+        equivKm: "km en cotxe",
+        contextEco: "Genial! La teva petjada és molt baixa. Gràcies per cuidar l'aire!",
+        contextMid: "Bona elecció. El transport públic redueix la contaminació.",
+        contextHigh: "Considera opcions com el transport públic per reduir aquest impacte."
     },
     en: {
         title: "Mobility Footprint",
-        description: "Calculate the CO₂ emissions of your trip to today's event.",
-        distanceLabel: "Distance traveled (km):",
-        modeLabel: "Transport mode:",
+        landingTitle: "Welcome to PRO-MOUTE",
+        landingSubtitle: "What kind of trip do you want to calculate today?",
+        btnSingle: "Today's Trip (Event)",
+        btnAnnual: "Annual Routine (Commute)",
+        btnBack: "⬅ Back",
+        singleTitle: "Trip to Event",
+        singleDesc: "Calculate the CO₂ emissions of your trip today (one-way).",
+        annualTitle: "Annual Routine",
+        annualDesc: "Calculate your annual impact (round trip, 45 weeks a year).",
+        daysLabel: "Days at the office per week:",
+        btnAddLeg: "+ Add another leg",
+        distanceLabel: "Distance (km):",
+        modeLabel: "Transport:",
         selectMode: "Select an option...",
+        legDelete: "X Delete",
         calculateBtn: "Calculate Footprint",
+        calculateAnnualBtn: "Calculate Annual Footprint",
         resultTitle: "Your impact:",
-        contextEco: "Great! Your transport mode has a very low impact. Thank you for keeping Barcelona's air clean!",
-        contextMid: "Good choice. Public transport helps reduce traffic and pollution in the city.",
-        contextHigh: "If possible, consider options like the Metro, Rodalies, or carpooling for future trips."
+        equivTrees: "Trees / year",
+        equivKm: "km by car",
+        contextEco: "Great! Your footprint is very low. Thanks for keeping the air clean!",
+        contextMid: "Good choice. Public transport helps reduce pollution.",
+        contextHigh: "Consider options like public transport to reduce this impact."
     }
 };
 
-// --- 1. CARGAR DATOS DESDE EL CSV ---
+// --- 1. GESTIÓN DE VISTAS Y ENRUTAMIENTO ---
+function goToView(viewId) {
+    // Ocultar todas las vistas
+    document.getElementById('view-landing').classList.replace('view-active', 'view-hidden');
+    document.getElementById('view-single').classList.replace('view-active', 'view-hidden');
+    document.getElementById('view-annual').classList.replace('view-active', 'view-hidden');
+    
+    // Ocultar resultados al cambiar de pantalla
+    document.getElementById('result-card').classList.replace('result-visible', 'result-hidden');
+
+    // Mostrar la vista solicitada
+    document.getElementById(`view-${viewId}`).classList.replace('view-hidden', 'view-active');
+}
+
+function handleUrlHash() {
+    const hash = window.location.hash;
+    if (hash === '#evento') {
+        goToView('single');
+    } else if (hash === '#anual') {
+        goToView('annual');
+    } else {
+        goToView('landing');
+    }
+}
+
+// --- 2. GESTIÓN DE TRAMOS (MULTIMODALIDAD) ---
+function addLeg(containerType) {
+    legCounter++;
+    const container = document.getElementById(`${containerType}-legs-container`);
+    const isFirstLeg = container.children.length === 0;
+
+    const legHtml = `
+        <div class="leg-card" id="leg-${legCounter}">
+            <div class="leg-header">
+                <span class="leg-title">Tramo</span>
+                ${!isFirstLeg ? `<button class="delete-leg-btn" onclick="removeLeg('leg-${legCounter}')" data-i18n="legDelete">X Eliminar</button>` : ''}
+            </div>
+            <div class="input-group">
+                <label data-i18n="distanceLabel">Distancia (km):</label>
+                <input type="number" class="leg-distance" placeholder="Ej. 5.5" min="0" step="0.1" required>
+            </div>
+            <div class="input-group">
+                <label data-i18n="modeLabel">Transporte:</label>
+                <select class="leg-mode" required>
+                    <option value="" disabled selected data-i18n="selectMode">Selecciona una opción...</option>
+                </select>
+            </div>
+        </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', legHtml);
+    
+    // Rellenar el nuevo select con los modos de transporte y traducir
+    buildDropdowns(currentLang);
+    updateTranslations(currentLang);
+}
+
+function removeLeg(legId) {
+    const leg = document.getElementById(legId);
+    if (leg) leg.remove();
+}
+
+// --- 3. CARGAR DATOS Y CREAR DESPLEGABLES ---
 async function loadEmissionData() {
     try {
         const response = await fetch('modes.csv');
         const data = await response.text();
-        
         const lines = data.trim().split('\n');
         
-        // Leer a partir de la línea 1 (saltando los encabezados)
         for(let i = 1; i < lines.length; i++) {
-            // Usamos punto y coma (;) para separar
             const [id, co2, icon, es, cat, en] = lines[i].split(';');
-            
             if(id && co2) {
                 transportModes.push({
                     id: id.trim(),
                     co2: parseFloat(co2.trim()),
                     icon: icon.trim(),
-                    translations: {
-                        es: es.trim(),
-                        cat: cat.trim(),
-                        en: en.trim()
-                    }
+                    translations: { es: es.trim(), cat: cat.trim(), en: en.trim() }
                 });
             }
         }
         
-        console.log("Modos de transporte cargados:", transportModes);
+        // Añadir el primer tramo por defecto a ambas calculadoras
+        addLeg('single');
+        addLeg('annual');
         
-        // Inicializar la página en español una vez cargados los datos
+        // Inicializar idioma y vista
         setLanguage('es');
+        handleUrlHash();
 
     } catch (error) {
         console.error("Error al cargar modes.csv:", error);
-        alert("Hubo un problema cargando los modos de transporte. Verifica que el archivo modes.csv exista.");
     }
 }
 
-// --- 2. CONSTRUIR EL MENÚ DESPLEGABLE DINÁMICAMENTE ---
-function buildDropdown(lang) {
-    const selectElement = document.getElementById('mode');
+function buildDropdowns(lang) {
+    // Buscar todos los selects dinámicos en la página
+    const selects = document.querySelectorAll('select.leg-mode');
     
-    // Guardar la opción actual seleccionada (si la hay)
-    const currentSelection = selectElement.value;
-    
-    // Limpiar el menú (dejando solo la opción por defecto)
-    selectElement.innerHTML = `<option value="" disabled ${currentSelection === "" ? "selected" : ""} data-i18n="selectMode">${translations[lang].selectMode}</option>`;
-    
-    // Crear una opción nueva por cada línea del CSV
-    transportModes.forEach(mode => {
-        const option = document.createElement('option');
-        option.value = mode.id;
-        // Formato visual: 🚇 Metro TMB (28 g/km)
-        option.textContent = `${mode.icon} ${mode.translations[lang]} (${mode.co2} g/km)`;
+    selects.forEach(selectElement => {
+        const currentSelection = selectElement.value;
+        selectElement.innerHTML = `<option value="" disabled ${currentSelection === "" ? "selected" : ""} data-i18n="selectMode">${translations[lang].selectMode}</option>`;
         
-        // Mantener seleccionado lo que el usuario ya había elegido al cambiar de idioma
-        if (mode.id === currentSelection) {
-            option.selected = true;
-        }
-        selectElement.appendChild(option);
+        transportModes.forEach(mode => {
+            const option = document.createElement('option');
+            option.value = mode.id;
+            option.textContent = `${mode.icon} ${mode.translations[lang]} (${mode.co2} g/km)`;
+            if (mode.id === currentSelection) option.selected = true;
+            selectElement.appendChild(option);
+        });
     });
 }
 
-// --- 3. CAMBIAR EL IDIOMA DE LA INTERFAZ ---
+// --- 4. IDIOMAS ---
 function setLanguage(lang) {
     currentLang = lang;
     
-    // Cambiar estilos de los botones de idioma
-    document.querySelectorAll('.language-switch button').forEach(btn => {
-        btn.classList.remove('active');
-    });
+    document.querySelectorAll('.language-switch button').forEach(btn => btn.classList.remove('active'));
     document.getElementById(`lang-${lang}`).classList.add('active');
 
-    // Traducir los textos estáticos de la interfaz (título, botón, etc.)
-    const elements = document.querySelectorAll('[data-i18n]');
-    elements.forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        if (translations[lang][key]) {
-            el.textContent = translations[lang][key];
-        }
-    });
+    updateTranslations(lang);
+    buildDropdowns(lang);
 
-    // Actualizar el menú desplegable con el nuevo idioma
-    buildDropdown(lang);
-
-    // Si ya hay un resultado en pantalla, actualizar el texto de contexto
-    if (lastCalculatedKg !== null) {
-        updateContextMessage(lastCalculatedKg);
-    }
+    if (lastCalculatedKg !== null) updateContextMessage(lastCalculatedKg);
 }
 
-// --- 4. CALCULAR LA HUELLA ---
-function calculateFootprint() {
-    const distanceInput = document.getElementById('distance').value;
-    const modeSelect = document.getElementById('mode').value;
+function updateTranslations(lang) {
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[lang][key]) el.textContent = translations[lang][key];
+    });
+}
 
-    // Validación
-    if (!distanceInput || distanceInput <= 0 || !modeSelect) {
-        let alertMsg = "Por favor, introduce una distancia válida y selecciona un transporte.";
-        if (currentLang === 'cat') alertMsg = "Si us plau, introdueix una distància vàlida i selecciona un transport.";
-        if (currentLang === 'en') alertMsg = "Please enter a valid distance and select a transport mode.";
-        alert(alertMsg);
+// --- 5. CÁLCULOS Y EQUIVALENCIAS ---
+function calculateFootprint(type) {
+    const container = document.getElementById(`${type}-legs-container`);
+    const legs = container.querySelectorAll('.leg-card');
+    
+    let totalKgCO2 = 0;
+    let isValid = true;
+
+    // Recorrer todos los tramos (viaje multimodal)
+    legs.forEach(leg => {
+        const distInput = leg.querySelector('.leg-distance').value;
+        const modeInput = leg.querySelector('.leg-mode').value;
+
+        if (!distInput || distInput <= 0 || !modeInput) {
+            isValid = false;
+            return;
+        }
+
+        const distance = parseFloat(distInput);
+        const emissionFactor = transportModes.find(m => m.id === modeInput).co2;
+        totalKgCO2 += (distance * emissionFactor) / 1000;
+    });
+
+    if (!isValid) {
+        alert(currentLang === 'es' ? "Por favor, completa todos los tramos correctamente." : 
+             (currentLang === 'cat' ? "Si us plau, completa tots els trams correctament." : 
+             "Please complete all legs correctly."));
         return;
     }
 
-    // Encontrar el modo de transporte seleccionado en nuestra base de datos dinámica
-    const selectedModeData = transportModes.find(m => m.id === modeSelect);
-    const emissionFactor = selectedModeData.co2;
-    
-    // Cálculo final
-    const distance = parseFloat(distanceInput);
-    const totalKgCO2 = (distance * emissionFactor) / 1000;
+    // Si es anual, multiplicar por días, ida/vuelta (2) y 45 semanas
+    if (type === 'annual') {
+        const days = document.getElementById('days-per-week').value || 5;
+        totalKgCO2 = totalKgCO2 * 2 * days * 45;
+    }
     
     lastCalculatedKg = totalKgCO2;
 
-    // Mostrar resultado
-    document.getElementById('co2-result').textContent = `${totalKgCO2.toFixed(2)} kg CO₂`;
+    // Mostrar resultados
+    document.getElementById('co2-result').textContent = `${totalKgCO2.toFixed(1)} kg CO₂`;
     updateContextMessage(totalKgCO2);
+    
+    // Calcular Equivalencias
+    // 1 Árbol absorbe ~20kg al año
+    document.getElementById('equiv-trees').textContent = (totalKgCO2 / 20).toFixed(1);
+    // Mix eléctrico España ~0.15 kg/kWh
+    document.getElementById('equiv-kwh').textContent = (totalKgCO2 / 0.15).toFixed(0);
+    // Coche combustión a 170g/km (0.17kg/km)
+    document.getElementById('equiv-km').textContent = (totalKgCO2 / 0.17).toFixed(0);
 
     const resultCard = document.getElementById('result-card');
-    resultCard.classList.remove('result-hidden');
-    resultCard.classList.add('result-visible');
+    resultCard.classList.replace('result-hidden', 'result-visible');
+    
+    // Hacer scroll hacia el resultado en móviles
+    resultCard.scrollIntoView({ behavior: 'smooth' });
 }
 
-// --- 5. ACTUALIZAR MENSAJE DE CONTEXTO ---
 function updateContextMessage(kgCO2) {
     const contextElement = document.getElementById('context-text');
-    
-    if (kgCO2 === 0 || kgCO2 < 0.5) {
+    // Ajustar umbrales según si es un viaje o anual. 
+    // Como simplificación visual, usamos el valor absoluto.
+    if (kgCO2 < 5) {
         contextElement.textContent = translations[currentLang].contextEco;
         contextElement.style.color = "#166534"; 
-    } else if (kgCO2 < 2.0) {
+    } else if (kgCO2 < 50) {
         contextElement.textContent = translations[currentLang].contextMid;
         contextElement.style.color = "#854d0e"; 
     } else {
@@ -184,5 +291,5 @@ function updateContextMessage(kgCO2) {
     }
 }
 
-// Inicializar la app cargando los datos del CSV al abrir la página
+// --- ARRANQUE ---
 window.onload = loadEmissionData;
