@@ -276,10 +276,12 @@ function calculateFootprint(type) {
         return;
     }
 
+    // --- DENTRO DE calculateFootprint(type) ---
     if (type === 'annual') {
         const days = document.getElementById('days-per-week').value || 5;
-        const weeks = document.getElementById('weeks-per-year').value || 45;
-        totalKgCO2 = totalKgCO2 * 2 * days * weeks;
+        // Eliminamos la lectura del input de semanas y usamos 45 como estándar
+        const weeksStandard = 45; 
+        totalKgCO2 = totalKgCO2 * 2 * days * weeksStandard;
     }
     
     lastCalculatedKg = totalKgCO2;
@@ -288,7 +290,7 @@ function calculateFootprint(type) {
     
     document.getElementById('equiv-trees').textContent = (totalKgCO2 / 20).toFixed(1);
     document.getElementById('equiv-kwh').textContent = (totalKgCO2 / 0.15).toFixed(0);
-    document.getElementById('equiv-km').textContent = (totalKgCO2 / 0.17).toFixed(0);
+    document.getElementById('equiv-km').textContent = (totalKgCO2 / 0.14).toFixed(0);
 
     const resultCard = document.getElementById('result-card');
     resultCard.classList.replace('result-hidden', 'result-visible');
@@ -297,28 +299,48 @@ function calculateFootprint(type) {
 
 function updateContextMessage(kgCO2, type) {
     const contextElement = document.getElementById('context-text');
-    const primaryMode = document.querySelector(`#${type}-legs-container .leg-mode`)?.value || 'any';
+    
+    // 1. Obtener el modo del primer tramo
+    // Importante: aseguramos que el selector sea el correcto para obtener el VALUE
+    const modeSelect = document.querySelector(`#${type}-legs-container .leg-mode`);
+    const primaryMode = modeSelect ? modeSelect.value : 'any';
 
-    let bestTip = tipsDatabase.find(t => 
-        kgCO2 >= t.min && kgCO2 <= t.max && 
-        (t.view === type || t.view === 'any') && 
-        (t.mode === primaryMode || t.mode === 'any')
+    console.log(`🎯 Buscando tip para: ${kgCO2}kg, Vista: ${type}, Modo: ${primaryMode}`);
+
+    // 2. Filtrar candidatos que encajen en el RANGO de KG y en la VISTA (o 'any')
+    const candidates = tipsDatabase.filter(t => 
+        kgCO2 >= t.min && 
+        kgCO2 <= t.max && 
+        (t.view === type || t.view === 'any')
     );
 
+    // 3. De los candidatos, buscamos con PRIORIDAD:
+    // Prioridad A: El modo exacto (ej: 'car')
+    // Prioridad B: El modo genérico ('any')
+    let bestTip = candidates.find(t => t.mode === primaryMode);
+    
     if (!bestTip) {
-        bestTip = tipsDatabase.find(t => kgCO2 >= t.min && kgCO2 <= t.max && t.mode === 'any');
+        bestTip = candidates.find(t => t.mode === 'any');
     }
 
+    // 4. Mostrar el resultado
     if (bestTip) {
+        console.log("✅ Tip seleccionado:", bestTip);
         contextElement.textContent = bestTip.text[currentLang];
     } else {
+        console.warn("⚠️ No se encontró ningún tip que encaje en el rango.");
         contextElement.textContent = ""; 
     }
 
+    // 5. Lógica de colores (Semáforo)
     const threshold = (type === 'annual') ? 500 : 5; 
-    if (kgCO2 < threshold) contextElement.style.color = "#166534";
-    else if (kgCO2 < (threshold * 10)) contextElement.style.color = "#854d0e";
-    else contextElement.style.color = "#991b1b";
+    if (kgCO2 < threshold) {
+        contextElement.style.color = "#166534"; // Verde
+    } else if (kgCO2 < (threshold * 10)) {
+        contextElement.style.color = "#854d0e"; // Ámbar
+    } else {
+        contextElement.style.color = "#991b1b"; // Rojo
+    }
 }
 
 // --- 6. SLIDERS ---
